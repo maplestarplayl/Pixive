@@ -51,6 +51,11 @@ dependencies {
     implementation(libs.coil)
     //paging
     implementation(libs.androidx.paging.runtime.ktx)
+    //workManager
+    implementation(libs.androidx.work.runtime.ktx)
+    //persistence
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.protobuf.java)
 
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.core.ktx)

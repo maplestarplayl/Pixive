@@ -2,15 +2,17 @@ package dev.lifeng.pixive
 
 import android.app.Application
 import android.content.Context
+import java.util.UUID
 
 class PixiveApplication: Application() {
     @Suppress("StaticFieldLeak")
     companion object{
         lateinit var context: Context
-        const val TOKEN = "Bearer iv7Qi-rRNlz2S16XXaik57kARDTFLq8lQaP4I0R8fkY"
+        var TOKEN: String = ""
+        lateinit var REFRESH_TOKEN_WORK_ID: UUID
     }
     override fun onCreate() {
         super.onCreate()
-        context = applicationContext
+
     }
 }

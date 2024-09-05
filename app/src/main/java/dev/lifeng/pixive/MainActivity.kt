@@ -2,17 +2,17 @@ package dev.lifeng.pixive
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import dev.lifeng.pixive.data.network.PixivApi
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
+import dev.lifeng.pixive.infra.work.PeriodGetSpotlightsWork
+import dev.lifeng.pixive.infra.work.RefreshTokenWork
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -24,6 +24,25 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+        //add refreshToken work to WorkManager
+        val refreshTokenWorkRequest = PeriodicWorkRequestBuilder<RefreshTokenWork>(10, java.util.concurrent.TimeUnit.MINUTES)
+                                        .setInitialDelay(10,java.util.concurrent.TimeUnit.MINUTES).build()
+        PixiveApplication.REFRESH_TOKEN_WORK_ID = refreshTokenWorkRequest.id
+        val refreshSpotlightsWorkRequest = PeriodicWorkRequestBuilder<PeriodGetSpotlightsWork>(1, java.util.concurrent.TimeUnit.DAYS).build()
+        WorkManager.getInstance(this).enqueue(refreshTokenWorkRequest)
+        WorkManager.getInstance(this).enqueue(refreshSpotlightsWorkRequest)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //cancel all work when activity destroy(Actually, it's not how workManager should be used...)
+        WorkManager.getInstance(this).cancelWorkById(PixiveApplication.REFRESH_TOKEN_WORK_ID)
+        Log.d("Work", "cancel refreshTokenWork")
+        lifecycleScope.launch{
+            applicationContext.SpotLightDataStore.data.first().let {
+                Log.d("DataStore", "data: $it")
+            }
         }
     }
 }

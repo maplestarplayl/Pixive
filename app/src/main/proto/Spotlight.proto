@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_package = "dev.lifeng.pixive";
+option java_multiple_files = true;
+
+message Spotlight {
+    int32 id = 1;
+    string title = 2;
+    string pure_title = 3;
+    string thumbnail = 4;
+    string article_url = 5;
+    string publish_date = 6;
+    string category = 7;
+    string sub_category = 8;
+}

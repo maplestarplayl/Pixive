@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -18,7 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
@@ -26,9 +24,11 @@ import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendArtistsResponse
 import dev.lifeng.pixive.data.model.response.PixivSpotlightResponse
-import dev.lifeng.pixive.data.network.PixivApi
 import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.databinding.FragmentHomeBinding
+import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class HomeFragment: Fragment() {
@@ -52,31 +52,13 @@ class HomeFragment: Fragment() {
         //recyclerView.addItemDecoration(SpacesItemDecoration(1))
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val linearLayoutManager = binding!!.highlightLayout
-                val response = repo.getSpotlights()
-                when (response.isSuccess) {
-                    true -> { addCardView(response.getOrNull()!!,linearLayoutManager) }
-                    false -> {
-                        Toast.makeText(this@HomeFragment.context, "网络错误", Toast.LENGTH_SHORT).show()
-                        return@repeatOnLifecycle
-                    }
-                }
-                Log.d("HomeFragment", "response: $response")
+                PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()!!
+                Log.d("HomeFragment", "token after load: ${PixiveApplication.TOKEN}")
+                async{ loadSpotlight() }
+                async { loadRecommendArtists() }
             }
         }
-        lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val response = repo.getRecommendArtists()
-                val layoutManager = view.findViewById<LinearLayout>(R.id.recommendArtistsLayout)
-                when (response.isSuccess) {
-                    true -> { addRecommendArtist(response.getOrNull()!!, layoutManager) }
-                    false -> {
-                        Toast.makeText(this@HomeFragment.context, "网络错误", Toast.LENGTH_SHORT).show()
-                        return@repeatOnLifecycle
-                    }
-                }
-            }
-        }
+
         lifecycleScope.launch {
             Log.d("SubFragment", "start collectLatest")
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -97,8 +79,8 @@ class HomeFragment: Fragment() {
                 is LoadState.Error -> {
                     val state = it.refresh as LoadState.Error
                     //progressBar.visibility = View.INVISIBLE
-                    // Toast.makeText(this.context, "Load Error: ${state.error.message}", Toast.LENGTH_SHORT).show()
-                    Log.d("SubFragment", "Load Error: ${state.error.message}")
+                    Toast.makeText(this.context, "Load Illusts Error: ${state.error.message}", Toast.LENGTH_SHORT).show()
+                    Log.d("SubFragment", "Load Illusts Error: ${state.error.message}")
                 }
             }
         }
@@ -106,6 +88,42 @@ class HomeFragment: Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
+    }
+    private suspend fun loadSpotlight(){
+        val linearLayoutManager = binding!!.highlightLayout
+        //if the local data from dataStore is empty, request the data from the network
+        requireContext().SpotLightDataStore.data.let { data ->
+            when(data.first().articles.isEmpty()){
+                true -> { requestSpotlight(linearLayoutManager)}
+                false -> addCardView(data.first(),linearLayoutManager)
+            }
+        }
+    }
+    private suspend fun loadRecommendArtists(){
+        val response = repo.getRecommendArtists()
+        val layoutManager = requireView().findViewById<LinearLayout>(R.id.recommendArtistsLayout)
+        when (response.isSuccess) {
+            true -> { addRecommendArtist(response.getOrNull()!!, layoutManager) }
+            false -> {
+                Toast.makeText(this@HomeFragment.context, "加载用户头像时网络错误", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+    }
+
+    private suspend fun requestSpotlight(linearLayoutManager: LinearLayout){
+        val response = repo.getSpotlights()
+        when (response.isSuccess) {
+            true -> {
+                addCardView(response.getOrNull()!!,linearLayoutManager)
+                //requireContext().SpotLightDataStore.data.let { it1 -> Log.d("HomeFragment", "data: $it1") }
+            }
+            false -> {
+                Toast.makeText(this@HomeFragment.context, "加载特辑时网络错误", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+        Log.d("HomeFragment", "response: $response")
     }
 
     private fun addCardView(response: PixivSpotlightResponse, linearLayoutManager: LinearLayout) {
