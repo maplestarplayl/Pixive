@@ -6,14 +6,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
 import dev.lifeng.pixive.infra.work.PeriodGetSpotlightsWork
 import dev.lifeng.pixive.infra.work.RefreshTokenWork
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,10 +35,5 @@ class MainActivity : AppCompatActivity() {
         //cancel all work when activity destroy(Actually, it's not how workManager should be used...)
         WorkManager.getInstance(this).cancelWorkById(PixiveApplication.REFRESH_TOKEN_WORK_ID)
         Log.d("Work", "cancel refreshTokenWork")
-        lifecycleScope.launch{
-            applicationContext.SpotLightDataStore.data.first().let {
-                Log.d("DataStore", "data: $it")
-            }
-        }
     }
 }

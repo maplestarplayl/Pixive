@@ -41,7 +41,7 @@ class HomeFragment: Fragment() {
         val view = binding!!.root
         return view
     }
-
+    @Suppress("DeferredResultUnused")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
         //val progressBar = view.findViewById<View>(R.id.progress_bar)
@@ -50,18 +50,14 @@ class HomeFragment: Fragment() {
         recyclerView.layoutManager = sm
         recyclerView.adapter = adapter
         //recyclerView.addItemDecoration(SpacesItemDecoration(1))
+
+        //Begin to load the data when the view is created
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()!!
+                PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()
                 Log.d("HomeFragment", "token after load: ${PixiveApplication.TOKEN}")
                 async{ loadSpotlight() }
                 async { loadRecommendArtists() }
-            }
-        }
-
-        lifecycleScope.launch {
-            Log.d("SubFragment", "start collectLatest")
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.getPixivIllustPagingData().collect {
                     adapter.submitData(it)
                 }

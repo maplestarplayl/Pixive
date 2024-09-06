@@ -14,7 +14,7 @@ class RefreshTokenWork(ctx: Context, params: WorkerParameters): CoroutineWorker(
         return try {
             // do something
             withContext(Dispatchers.IO){ PixiveApplication.TOKEN = "Bearer " +PixivAuthApi.create().auth().accessToken }
-            Log.d("Auth", "GET Token from periodic work: ${PixiveApplication.TOKEN}")
+            Log.d("RefreshTokenWork", "GET Token from periodic work: ${PixiveApplication.TOKEN}")
             Result.success()
         } catch (e: Exception) {
             Result.failure()

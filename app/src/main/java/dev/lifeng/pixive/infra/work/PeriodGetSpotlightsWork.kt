@@ -15,17 +15,17 @@ class PeriodGetSpotlightsWork(ctx: Context, params: WorkerParameters): Coroutine
                 true -> {
                     applicationContext.SpotLightDataStore.updateData { response.getOrNull()!! }
                     Log.d("PeriodGetSpotlightsWork", "Successfully get spotlights")
-                    return Result.success()
+                    Result.success()
                 }
                 false -> {
                     Log.d("PeriodGetSpotlightsWork", "Failed to get spotlights due to network error")
                     Log.d("PeriodGetSpotlightsWork", "the exception is ${response.exceptionOrNull().toString()}")
-                    return Result.failure()
+                    Result.failure()
                 }
             }
         }catch (e: Exception){
             Log.d("PeriodGetSpotlightsWork", "Failed to get spotlights due to exception")
-            Log.d("PeriodGetSpotlightsWork", "the exception is ${e.toString()}")
+            Log.d("PeriodGetSpotlightsWork", "the exception is ${e.message}")
             return Result.failure()
         }
     }
