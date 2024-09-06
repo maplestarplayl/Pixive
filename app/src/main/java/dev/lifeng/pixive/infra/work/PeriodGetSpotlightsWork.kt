@@ -10,7 +10,7 @@ import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
 class PeriodGetSpotlightsWork(ctx: Context, params: WorkerParameters): CoroutineWorker(ctx, params){
     override suspend fun doWork(): Result {
         return try {
-            val response = repo.getSpotlights()
+            val response = repo.getSpotlightsFromNetwork()
             when(response.isSuccess){
                 true -> {
                     applicationContext.SpotLightDataStore.updateData { response.getOrNull()!! }

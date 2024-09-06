@@ -13,6 +13,6 @@ class PixiveApplication: Application() {
     }
     override fun onCreate() {
         super.onCreate()
-
+        context = applicationContext
     }
 }

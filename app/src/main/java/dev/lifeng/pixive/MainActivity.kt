@@ -14,6 +14,7 @@ import dev.lifeng.pixive.infra.work.RefreshTokenWork
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PixiveApplication.context = applicationContext
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity() {
         val refreshTokenWorkRequest = PeriodicWorkRequestBuilder<RefreshTokenWork>(10, java.util.concurrent.TimeUnit.MINUTES)
                                         .setInitialDelay(10,java.util.concurrent.TimeUnit.MINUTES).build()
         PixiveApplication.REFRESH_TOKEN_WORK_ID = refreshTokenWorkRequest.id
-        val refreshSpotlightsWorkRequest = PeriodicWorkRequestBuilder<PeriodGetSpotlightsWork>(1, java.util.concurrent.TimeUnit.DAYS).build()
+        val refreshSpotlightsWorkRequest = PeriodicWorkRequestBuilder<PeriodGetSpotlightsWork>(1, java.util.concurrent.TimeUnit.DAYS)
+                                            .build()
         WorkManager.getInstance(this).enqueue(refreshTokenWorkRequest)
         WorkManager.getInstance(this).enqueue(refreshSpotlightsWorkRequest)
     }

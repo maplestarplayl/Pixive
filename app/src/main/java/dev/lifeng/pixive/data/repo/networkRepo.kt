@@ -3,6 +3,9 @@ package dev.lifeng.pixive.data.repo
 import android.util.Log
 import dev.lifeng.pixive.data.network.PixivApi
 import dev.lifeng.pixive.data.network.PixivAuthApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
 
 object repo{
     private const val PAGE_SIZE = 10
@@ -10,8 +13,10 @@ object repo{
     private val pixivAuthApi = PixivAuthApi.create()
     //elegant way to handle network request
     suspend fun auth(): Result<String> = tryAndCatch { pixivAuthApi.auth().accessToken }
-    suspend fun getSpotlights() = tryAndCatch { pixivApi.getSpotlights() }
-    suspend fun getRecommendArtists() = tryAndCatch { pixivApi.getRecommendArtists() }
+    suspend fun getSpotlightsFromNetwork() = tryAndCatch { pixivApi.getSpotlights() }
+    //suspend fun getRecommendArtists() = tryAndCatch { pixivApi.getRecommendArtists() }
+    suspend fun getSpotlightsFlow() = tryAndCatchReturnFlow { pixivApi.getSpotlights() }
+    suspend fun getRecommendArtistsFlow() = tryAndCatchReturnFlow { pixivApi.getRecommendArtists() }
 }
 
 
@@ -24,4 +29,13 @@ suspend fun <T> tryAndCatch(block:suspend () -> T): Result<T>{
             Log.d("Network", "Failed to get data due to exception: ${e.message}")
         }
     }
+}
+
+suspend fun <T>tryAndCatchReturnFlow(block:suspend () -> T): Flow<T> {
+    return suspend { block() }
+        .asFlow()
+        .catch {
+            e -> e.printStackTrace()
+            Log.d("Network", "Failed to get data due to exception: ${e.message}")
+        }
 }
