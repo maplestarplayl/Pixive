@@ -40,7 +40,7 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <include  layout="@layout/recommend_artists"/>
+    <include  android:id="@+id/recmomend_artists" layout="@layout/recommend_artists"/>
     <Space
         android:layout_width="match_parent"
         android:layout_height="40dp"/>

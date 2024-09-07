@@ -10,6 +10,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dev.lifeng.pixive.infra.work.PeriodGetSpotlightsWork
 import dev.lifeng.pixive.infra.work.RefreshTokenWork
+import dev.lifeng.pixive.ui.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +23,8 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        //set homeFragment as default fragment
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, HomeFragment()).commit()
         //add refreshToken work to WorkManager
         val refreshTokenWorkRequest = PeriodicWorkRequestBuilder<RefreshTokenWork>(10, java.util.concurrent.TimeUnit.MINUTES)
                                         .setInitialDelay(10,java.util.concurrent.TimeUnit.MINUTES).build()

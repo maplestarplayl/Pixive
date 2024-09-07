@@ -7,10 +7,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-    <fragment
-        android:id="@+id/homeFragment"
-        android:name="dev.lifeng.pixive.ui.home.HomeFragment"
+
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+    </FrameLayout>
+
 
   </androidx.constraintlayout.widget.ConstraintLayout>
