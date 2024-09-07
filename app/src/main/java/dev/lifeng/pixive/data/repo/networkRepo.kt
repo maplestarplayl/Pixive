@@ -15,8 +15,8 @@ object repo{
     suspend fun auth(): Result<String> = tryAndCatch { pixivAuthApi.auth().accessToken }
     suspend fun getSpotlightsFromNetwork() = tryAndCatch { pixivApi.getSpotlights() }
     //suspend fun getRecommendArtists() = tryAndCatch { pixivApi.getRecommendArtists() }
-    suspend fun getSpotlightsFlow() = tryAndCatchReturnFlow { pixivApi.getSpotlights() }
-    suspend fun getRecommendArtistsFlow() = tryAndCatchReturnFlow { pixivApi.getRecommendArtists() }
+    fun getSpotlightsFlow() = tryAndCatchReturnFlow { pixivApi.getSpotlights() }
+    fun getRecommendArtistsFlow() = tryAndCatchReturnFlow { pixivApi.getRecommendArtists() }
 }
 
 
@@ -31,11 +31,11 @@ suspend fun <T> tryAndCatch(block:suspend () -> T): Result<T>{
     }
 }
 
-suspend fun <T>tryAndCatchReturnFlow(block:suspend () -> T): Flow<T> {
+fun <T>tryAndCatchReturnFlow(block:suspend () -> T): Flow<T> {
     return suspend { block() }
         .asFlow()
         .catch {
             e -> e.printStackTrace()
             Log.d("Network", "Failed to get data due to exception: ${e.message}")
-        }
+        }.also { Log.d("Network", "tryAndCatchReturnFlow: $it") }
 }

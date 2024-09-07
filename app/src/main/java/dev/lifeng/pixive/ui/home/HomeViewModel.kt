@@ -12,30 +12,29 @@ import dev.lifeng.pixive.data.repo.dataStoreRepo
 import dev.lifeng.pixive.data.repo.pagingRepo
 import dev.lifeng.pixive.data.repo.repo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel: ViewModel() {
 
-
-    suspend fun spotLightsFlow(): Flow<PixivSpotlightResponse>{
-        return dataStoreRepo.getSpotlights().onEach { Log.d("Network","data passed inside getSpotlights $it") }.catch {
-            e -> e.message?.let { Log.d("Network","catch error in viewModel") }
+    val spotLightsFlow: StateFlow<PixivSpotlightResponse> =
+         dataStoreRepo.getSpotlights().catch {
+                e -> e.message?.let { Log.d("Network","catch error in viewModel") }
             emitAll(repo.getSpotlightsFlow())
-        }
-        //return repo.getSpotlightsFlow()
-    }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, PixivSpotlightResponse(listOf()))
 
-    suspend fun recommendArtistsFlow(): Flow<PixivRecommendArtistsResponse>{
-        return repo.getRecommendArtistsFlow().onEach { Log.d("Netwrok","data passed inside getSpotlights") }.catch {
-            e -> e.message?.let { Log.d("HomeViweModel","catch error in viewModel") }
-            //here using a hack techique to emit a empty list of artists and use nextUrl field to store the error message
-            emit(PixivRecommendArtistsResponse(listOf(),e.message?:""))
-        }
-    }
+    val recommendArtistsFlow: StateFlow<PixivRecommendArtistsResponse> =
+         repo.getRecommendArtistsFlow()
+            .catch {
+                    e -> e.message?.let { Log.d("HomeViweModel","catch error in viewModel") }
+                //here using a hack technique to emit a empty list of artists and use nextUrl field to store the error message
+                emit(PixivRecommendArtistsResponse(listOf(),e.message?:""))
+            }.stateIn(viewModelScope, SharingStarted.Lazily, PixivRecommendArtistsResponse(listOf(),""))
 
-    fun getPixivIllustPagingData(): Flow<PagingData<PixivRecommendIllusts.Illust>> {
-        return pagingRepo.getRecommendIllusts().onEach { Log.d("Netwrok","data passed inside getSpotlights") }.cachedIn(viewModelScope)
-    }
+    val getPixivIllustPagingData: Flow<PagingData<PixivRecommendIllusts.Illust>> =
+            pagingRepo.getRecommendIllusts().cachedIn(viewModelScope)
+
 }

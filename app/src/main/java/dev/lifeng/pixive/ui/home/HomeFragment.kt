@@ -1,6 +1,5 @@
 package dev.lifeng.pixive.ui.home
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -29,12 +28,13 @@ import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.databinding.FragmentHomeBinding
 import dev.lifeng.pixive.ui.home.artistInterface.RecommendArtistFragment
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class HomeFragment: Fragment() {
     private var binding: FragmentHomeBinding? = null
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel: HomeViewModel by viewModels(
+        ownerProducer = { requireActivity() }
+    )
     private val adapter = PixivIllustAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -45,7 +45,13 @@ class HomeFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
         recommendArtistsLayout.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this.context, RecommendArtistFragment::class.java)
+            //val intent = Intent(this.context, RecommendArtistFragment::class.java)
+            val bundle = Bundle()
+            //bundle.putString("recommendedArtists", viewModel.recommendArtistsFlow().)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, RecommendArtistFragment())
+                .addToBackStack(null)
+                .commit()
         })
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
         //val progressBar = view.findViewById<View>(R.id.progress_bar)
@@ -60,11 +66,9 @@ class HomeFragment: Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()
                 Log.d("HomeFragment", "token after load: ${PixiveApplication.TOKEN}")
-                //async{ loadSpotlight() }
-                delay(5000)
                 Log.d("HomeFragment", "begin to load the data")
                 async{
-                    viewModel.spotLightsFlow().collect {
+                    viewModel.spotLightsFlow.collect {
                         Log.d("HomeFragment", "begin to load the data for SpotLight")
                         if (it.articles.isEmpty()) {
                             showErrorMsg("加载特辑时网络错误")
@@ -74,9 +78,8 @@ class HomeFragment: Fragment() {
                         }
                     }
                 }
-                //async { loadRecommendArtists() }
                 async{
-                    viewModel.recommendArtistsFlow().collect {
+                    viewModel.recommendArtistsFlow.collect {
                         if (it.userPreviews.isEmpty()) {
                             showErrorMsg("加载用户头像时网络错误", it.nextUrl)
                         } else {
@@ -85,11 +88,10 @@ class HomeFragment: Fragment() {
                     }
                 }
                 async{
-                    viewModel.getPixivIllustPagingData().collect {
+                    viewModel.getPixivIllustPagingData.collect {
                         adapter.submitData(it)
                     }
                 }
-                Log.d("HomeFragment", "end to load the data")
             }
         }
         adapter.addLoadStateListener {
@@ -121,28 +123,6 @@ class HomeFragment: Fragment() {
         Toast.makeText(this.context, msg, Toast.LENGTH_SHORT).show()
         Log.d("HomeFragment","errorMsg: $errorMsg")
     }
-//    private suspend fun loadSpotlight(){
-//        val linearLayoutManager = binding!!.highlightLayout
-//        //if the local data from dataStore is empty, request the data from the network
-//        requireContext().SpotLightDataStore.data.let { data ->
-//            when(data.first().articles.isEmpty()){
-//                true -> { requestSpotlight(linearLayoutManager)}
-//                false -> addCardView(data.first(),linearLayoutManager)
-//            }
-//        }
-//    }
-//    private suspend fun loadRecommendArtists(){
-//        val response = repo.getRecommendArtists()
-//        val layoutManager = requireView().findViewById<LinearLayout>(R.id.recommendArtistsLayout)
-//        when (response.isSuccess) {
-//            true -> { addRecommendArtist(response.getOrNull()!!, layoutManager) }
-//            false -> {
-//                Toast.makeText(this@HomeFragment.context, "加载用户头像时网络错误", Toast.LENGTH_SHORT).show()
-//                return
-//            }
-//        }
-//    }
-
 //    private suspend fun requestSpotlight(linearLayoutManager: LinearLayout){
 //        val response = repo.getSpotlights()
 //        when (response.isSuccess) {
