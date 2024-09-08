@@ -13,11 +13,16 @@ import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import coil.load
+import coil.request.Disposable
 import coil.transform.CircleCropTransformation
+import coil.transform.RoundedCornersTransformation
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendArtistsResponse
 import dev.lifeng.pixive.infra.extension.collectIn
 import dev.lifeng.pixive.ui.home.HomeViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 
 class RecommendArtistFragment : Fragment() {
     private val viewModel: HomeViewModel by viewModels(
@@ -29,8 +34,6 @@ class RecommendArtistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val textView = view.findViewById<TextView>(R.id.test)
-        textView.text = "RecommendArtistFragment"
         val recommendArtistsLayout = view.findViewById<LinearLayout>(R.id.artist_list_layout)
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
             if (it.userPreviews.isNotEmpty()) {
@@ -43,10 +46,14 @@ class RecommendArtistFragment : Fragment() {
 
 
 
-    private fun addArtistsView(response: PixivRecommendArtistsResponse, recommendArtistsLayout: LinearLayout) {
+    private suspend fun addArtistsView(response: PixivRecommendArtistsResponse, recommendArtistsLayout: LinearLayout) {
         response.userPreviews.forEach {
             Log.d("RecommendArtistFragment", "addArtistsView: ${it.illusts}")
-            val cardView = LayoutInflater.from(this@RecommendArtistFragment.context).inflate(R.layout.recommend_artist_list_item, recommendArtistsLayout, false) as CardView
+            val cardView = LayoutInflater.from(this@RecommendArtistFragment.context).inflate(
+                R.layout.recommend_artist_list_item,
+                recommendArtistsLayout,
+                false
+            ) as CardView
             val imageView1 = cardView.findViewById<ImageView>(R.id.artist_image1)
             val imageView2 = cardView.findViewById<ImageView>(R.id.artist_image2)
             val imageView3 = cardView.findViewById<ImageView>(R.id.artist_image3)
@@ -56,24 +63,16 @@ class RecommendArtistFragment : Fragment() {
             artistImageView.load(it.user.profileImageUrls.medium) {
                 transformations(CircleCropTransformation())
             }
-            imageView1.load(it.illusts[0].imageUrls.squareMedium) {
-                crossfade(true)
-                size(400, 400)
-                addHeader("Referer", "https://www.pixiv.net/")
-            }
-            imageView2.load(it.illusts[1].imageUrls.squareMedium) {
-                crossfade(true)
-                size(400, 400)
-                addHeader("Referer", "https://www.pixiv.net/")
-            }
-            imageView3.load(it.illusts[2].imageUrls.squareMedium) {
-                crossfade(true)
-                size(400, 400)
-                addHeader("Referer", "https://www.pixiv.net/")
-            }
+            val res1 = imageView1.loadCard(it.illusts[0].imageUrls.medium)
+            val res2 = imageView2.loadCard(it.illusts[1].imageUrls.medium)
+            val res3 = imageView3.loadCard(it.illusts[2].imageUrls.medium)
             recommendArtistsLayout.addView(cardView)
+            withTimeoutContinue(1000) {
+                res1.job.await()
+                res2.job.await()
+                res3.job.await()
+            }
         }
-
     }
     private fun showErrorMsg(msg: String){
         Toast.makeText(this.context, msg, Toast.LENGTH_SHORT).show()
@@ -81,6 +80,22 @@ class RecommendArtistFragment : Fragment() {
     private fun showErrorMsg(msg: String,errorMsg: String){
         Toast.makeText(this.context, msg, Toast.LENGTH_SHORT).show()
         Log.d("HomeFragment","errorMsg: $errorMsg")
+    }
+    private fun ImageView.loadCard(url: String): Disposable{
+        return this.load(url){
+            crossfade(800)
+            size(350,350)
+            addHeader("Referer", "https://www.pixiv.net/")
+            placeholder(R.drawable.card_pic_placeholder)
+            transformations(RoundedCornersTransformation(20f))
+        }
+    }
+    private suspend fun <T> withTimeoutContinue(timeMillis:Long, block:  suspend CoroutineScope.() -> T){
+        try {
+            withTimeout(timeMillis) { block() }
+        }catch (e: TimeoutCancellationException){
+            return
+        }
     }
 }
 
