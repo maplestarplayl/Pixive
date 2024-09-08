@@ -1,18 +1,19 @@
 package dev.lifeng.pixive.ui.home
 
-import android.graphics.Rect
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import coil.transform.RoundedCornersTransformation
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendIllusts
+import dev.lifeng.pixive.infra.extension.CustomRoundedCornersTransformation
 
 
 class PixivIllustAdapter : PagingDataAdapter<PixivRecommendIllusts.Illust, PixivIllustAdapter.ViewHolder>(COMPARATOR) {
@@ -30,9 +31,9 @@ class PixivIllustAdapter : PagingDataAdapter<PixivRecommendIllusts.Illust, Pixiv
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //val title: TextView = itemView.findViewById(R.id.illust_title)
-        //val artistName: TextView = itemView.findViewById(R.id.illust_author)
-        //val isFollowed: TextView = itemView.findViewById(R.id.)
+        val title: TextView = itemView.findViewById(R.id.illust_title_text)
+        val artistName: TextView = itemView.findViewById(R.id.illust_artist_name)
+        val heart: ImageButton = itemView.findViewById(R.id.favorite_button)
         val image : ImageView = itemView.findViewById(R.id.illust_image)
     }
 
@@ -43,15 +44,20 @@ class PixivIllustAdapter : PagingDataAdapter<PixivRecommendIllusts.Illust, Pixiv
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val layoutParams = holder.image.layoutParams
         val illust = getItem(position)
         if (illust != null) {
-            //holder.title.text = illust.title
-            //holder.artistName.text = illust.user.name
+            holder.title.text = illust.title
+            holder.artistName.text = illust.user.name
+            holder.heart.setOnClickListener {
+                holder.heart.setImageResource(R.drawable.favorite_filled_red)
+            }
+            if (illust.isBookmarked){
+                holder.heart.setImageResource(R.drawable.favorite_filled_red)
+            }
             //holder.text = illust.totalBookMarks.toString()
             val imageView = holder.image
             imageView.load(illust.imageUrls.medium){
-                transformations(RoundedCornersTransformation(40f))
+                transformations(CustomRoundedCornersTransformation(40f,40f,0f,0f))
                 addHeader("Referer", "https://www.pixiv.net/")
             }
             imageView.setOnClickListener(View.OnClickListener {
@@ -64,24 +70,4 @@ class PixivIllustAdapter : PagingDataAdapter<PixivRecommendIllusts.Illust, Pixiv
         }
     }
 
-}
-
-class SpacesItemDecoration(private val space: Int) : RecyclerView.ItemDecoration() {
-
-    override fun getItemOffsets(
-        outRect: Rect,
-        view: View,
-        parent: RecyclerView,
-        state: RecyclerView.State
-    ) {
-        // 为每个子项设置偏移量（边距）
-        outRect.left = space
-        outRect.right = space
-        outRect.bottom = space
-
-        // 如果是第一个项目，也设置顶部间距
-        if (parent.getChildAdapterPosition(view) == 0) {
-            outRect.top = space
-        }
-    }
 }
