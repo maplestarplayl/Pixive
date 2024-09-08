@@ -1,5 +1,6 @@
 package dev.lifeng.pixive.data.model.response
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,6 +21,7 @@ data class PixivRecommendIllusts(
         val isBookmarked: Boolean,
         val width: Int,
         val height: Int,
+        @SerialName("meta_single_page")val metaSinglePage: MetaSinglePage
     )
     @Serializable
     data class User(
@@ -28,5 +30,9 @@ data class PixivRecommendIllusts(
         val account: String,
         val profileImageUrls: ProfileImageUrls,
         val isFollowed: Boolean
+    )
+    @Serializable
+    data class MetaSinglePage(
+        @SerialName("original_image_url")val originalImageUrl: String? = null
     )
 }

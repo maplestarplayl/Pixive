@@ -1,12 +1,22 @@
 package dev.lifeng.pixive.infra.extension
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import coil.ImageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import coil.size.Size
 import coil.transform.Transformation
+import dev.lifeng.pixive.infra.app.saveImageToGallery
 
 class CustomRoundedCornersTransformation(
     private val topLeft: Float,
@@ -47,5 +57,34 @@ class CustomRoundedCornersTransformation(
         input.recycle()
 
         return output
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+suspend fun saveImage(context: Context, imageUrl: String, title:String){
+    val loader = ImageLoader(context)
+    val request = ImageRequest.Builder(context)
+        .data(imageUrl).addHeader("Referer", "https://www.pixiv.net/")
+        .build()
+
+    val result = loader.execute(request)
+    when (result){
+        is ErrorResult -> {
+            result.throwable.printStackTrace()
+            Toast.makeText(context, "Load Failed", Toast.LENGTH_SHORT).show()
+        }
+        is SuccessResult -> {
+            val bitmap = (result.drawable as BitmapDrawable).bitmap
+            val flag = saveImageToGallery(context,bitmap,title)
+            when(flag) {
+                true -> {
+                    Toast.makeText(context, "Save Success", Toast.LENGTH_SHORT).show()
+                }
+
+                false -> {
+                    Toast.makeText(context, "Save Failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
