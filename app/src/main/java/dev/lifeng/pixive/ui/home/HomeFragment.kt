@@ -19,6 +19,7 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
+import coil.request.CachePolicy
 import coil.transform.CircleCropTransformation
 import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
@@ -43,6 +44,7 @@ class HomeFragment: Fragment() {
         return view
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("HomeFragment", "savedInstance is $savedInstanceState")
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
         recommendArtistsLayout.setOnClickListener(View.OnClickListener {
             parentFragmentManager.beginTransaction()
@@ -54,7 +56,7 @@ class HomeFragment: Fragment() {
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.adapter = adapter
         lifecycleScope.launch {
-            loadData(viewModel, recommendArtistsLayout)
+            loadData(viewModel, recommendArtistsLayout,savedInstanceState)
         }
         addLoadStateForAdapter(adapter)
     }
@@ -84,8 +86,12 @@ class HomeFragment: Fragment() {
         }
     }
     //加载数据
-    private suspend fun loadData(viewModel: HomeViewModel, recommendArtistsLayout: LinearLayout) {
+    private suspend fun loadData(viewModel: HomeViewModel, recommendArtistsLayout: LinearLayout,savedInstanceState: Bundle?) {
         PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()
+        if (!viewModel.back) {
+            viewModel.updateRecommendArtists()
+        }
+        Log.d("HomeFragment", "Update Recommend Artists")
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
             if (it.userPreviews.isEmpty()) {
                 showErrorMsg("加载用户头像时网络错误", it.nextUrl)
@@ -120,6 +126,7 @@ class HomeFragment: Fragment() {
             val textView = cardView.findViewById<TextView>(R.id.spotlight_title)
             val imageView = cardView.findViewById<ImageView>(R.id.image)
             imageView.load(article.thumbnail){
+                diskCachePolicy(CachePolicy.ENABLED)
                 placeholder(R.drawable.white_background)
                 addHeader("Referer", "https://www.pixiv.net/")
             }
@@ -138,7 +145,7 @@ class HomeFragment: Fragment() {
                 return@setOnTouchListener true
             }
             cardView.translationX = 500f  // 初始位置在屏幕外
-            cardView.animate().translationX(0f).setDuration(300).start()  // 向屏幕内滑动
+            cardView.animate().translationX(0f).setDuration(1000).start()  // 向屏幕内滑动
             linearLayoutManager.addView(cardView)
         }
     }

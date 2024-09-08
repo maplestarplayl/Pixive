@@ -9,11 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import coil.request.Disposable
 import coil.transform.CircleCropTransformation
@@ -24,6 +26,7 @@ import dev.lifeng.pixive.infra.extension.collectIn
 import dev.lifeng.pixive.ui.home.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
 class RecommendArtistFragment : Fragment() {
@@ -36,12 +39,24 @@ class RecommendArtistFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.back = true
         val recommendArtistsLayout = view.findViewById<LinearLayout>(R.id.artist_list_layout)
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
             if (it.userPreviews.isNotEmpty()) {
+                Log.d("RecommendArtistFragment", "addArtistsView ${it.userPreviews.size}")
                 addArtistsView(it, recommendArtistsLayout)
             }else{
                 showErrorMsg("加载用户头像时网络错误", it.nextUrl)
+            }
+        }
+        val scrollView = view.findViewById<ScrollView>(R.id.artist_list_scroll_view)
+        scrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            val view = scrollView.getChildAt(scrollView.childCount - 1)
+            val diff = (view.bottom - (scrollView.height + scrollY))
+            if (diff == 0) {
+                // 滚动到底部时执行的操作
+                Log.d("ScrollView", "Scrolled to bottom")
+                lifecycleScope.launch { viewModel.updateRecommendArtists() }
             }
         }
     }

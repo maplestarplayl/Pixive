@@ -3,8 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:contentPadding="10dp"
-
+    app:cardUseCompatPadding="true"
+    app:cardCornerRadius="20dp"
+    app:cardBackgroundColor="@color/appBackground"
     android:orientation="vertical">
     <ImageView
         android:id="@+id/illust_image"
