@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dev.lifeng.pixive.data.repo.repo
-import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
+import dev.lifeng.pixive.infra.datastore.cache.SpotLightDataStore
 import kotlinx.coroutines.flow.catch
 
 class PeriodGetSpotlightsWork(ctx: Context, params: WorkerParameters): CoroutineWorker(ctx, params){

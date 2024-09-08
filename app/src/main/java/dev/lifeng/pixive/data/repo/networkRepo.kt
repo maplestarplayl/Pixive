@@ -34,6 +34,6 @@ fun <T>tryAndCatchReturnFlow(block:suspend () -> T): Flow<T> {
         .asFlow()
         .catch {
             e -> e.printStackTrace()
-            Log.d("Network", "Failed to get data due to exception: ${e.message}")
+            Log.d("Network", "Failed to get FLow ata due to exception: ${e.message}")
         }.also { Log.d("Network", "tryAndCatchReturnFlow: $it") }
 }

@@ -1,4 +1,4 @@
-package dev.lifeng.pixive.infra.datastore
+package dev.lifeng.pixive.infra.datastore.preference
 
 import android.content.Context
 import android.util.Log
@@ -7,20 +7,23 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.protobuf.InvalidProtocolBufferException
-import dev.lifeng.pixive.data.model.response.PixivSpotlightResponse
+import dev.lifeng.pixive.data.model.savedData.UserSetting
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import java.io.InputStream
-import java.io.OutputStream
 
-object SpotlightSerializer : Serializer<PixivSpotlightResponse> {
-    override val defaultValue: PixivSpotlightResponse = PixivSpotlightResponse(listOf())
+val Context.UserSettingsDataStore: DataStore<UserSetting> by dataStore(
+    fileName = "user_settings.json",
+    serializer = UserSettingsSerializer
+)
+
+object UserSettingsSerializer: Serializer<UserSetting>{
+    override val defaultValue: UserSetting = UserSetting("", 0)
 
     @OptIn(ExperimentalSerializationApi::class)
-    override suspend fun readFrom(input: InputStream): PixivSpotlightResponse {
+    override suspend fun readFrom(input: java.io.InputStream): UserSetting {
         try {
             val Jsonme = Json{
                 ignoreUnknownKeys = true
@@ -33,7 +36,7 @@ object SpotlightSerializer : Serializer<PixivSpotlightResponse> {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override suspend fun writeTo(t: PixivSpotlightResponse, output: OutputStream) {
+    override suspend fun writeTo(t: UserSetting, output: java.io.OutputStream) {
         try{
             val Jsonme = Json{
                 ignoreUnknownKeys = true
@@ -45,8 +48,3 @@ object SpotlightSerializer : Serializer<PixivSpotlightResponse> {
         }
     }
 }
-
-val Context.SpotLightDataStore: DataStore<PixivSpotlightResponse> by dataStore(
-    fileName = "spotlight1.json",
-    serializer = SpotlightSerializer
-)
