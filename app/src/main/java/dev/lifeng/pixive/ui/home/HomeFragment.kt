@@ -1,8 +1,10 @@
 package dev.lifeng.pixive.ui.home
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -49,7 +51,7 @@ class HomeFragment: Fragment() {
                 .commit()
         })
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
-        recyclerView.layoutManager = StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL)
+        recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.adapter = adapter
         lifecycleScope.launch {
             loadData(viewModel, recommendArtistsLayout)
@@ -111,6 +113,7 @@ class HomeFragment: Fragment() {
         Toast.makeText(this.context, msg, Toast.LENGTH_SHORT).show()
         Log.d("HomeFragment","errorMsg: $errorMsg")
     }
+    @SuppressLint("ClickableViewAccessibility")
     private fun addCardView(response: PixivSpotlightResponse, linearLayoutManager: LinearLayout) {
         response.articles.forEach { article ->
             val cardView = LayoutInflater.from(this@HomeFragment.context).inflate(R.layout.card_item, linearLayoutManager, false) as CardView
@@ -121,7 +124,21 @@ class HomeFragment: Fragment() {
                 addHeader("Referer", "https://www.pixiv.net/")
             }
             textView.text = article.title
-            Log.d("HomeFragment", "article: ${article.id}")
+            cardView.setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        v.animate().translationZ(20f).duration = 150
+                        v.animate().rotationY(5f).setDuration(500)
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        v.animate().translationZ(0f).duration = 150
+                        v.animate().rotationY(0f).setDuration(500)
+                    }
+                }
+                return@setOnTouchListener true
+            }
+            cardView.translationX = 500f  // 初始位置在屏幕外
+            cardView.animate().translationX(0f).setDuration(300).start()  // 向屏幕内滑动
             linearLayoutManager.addView(cardView)
         }
     }

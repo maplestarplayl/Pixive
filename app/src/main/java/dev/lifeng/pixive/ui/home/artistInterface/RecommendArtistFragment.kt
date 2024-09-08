@@ -1,8 +1,10 @@
 package dev.lifeng.pixive.ui.home.artistInterface
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -46,14 +48,27 @@ class RecommendArtistFragment : Fragment() {
 
 
 
+    @SuppressLint("ClickableViewAccessibility")
     private suspend fun addArtistsView(response: PixivRecommendArtistsResponse, recommendArtistsLayout: LinearLayout) {
         response.userPreviews.forEach {
-            Log.d("RecommendArtistFragment", "addArtistsView: ${it.illusts}")
             val cardView = LayoutInflater.from(this@RecommendArtistFragment.context).inflate(
                 R.layout.recommend_artist_list_item,
                 recommendArtistsLayout,
                 false
             ) as CardView
+            cardView.setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN-> {
+                        v.animate().translationZ(20f).duration = 150
+                        v.animate().rotationY(3f).setDuration(500)
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        v.animate().translationZ(0f).duration = 150
+                        v.animate().rotationY(0f).setDuration(500)
+                    }
+                }
+                return@setOnTouchListener true
+            }
             val imageView1 = cardView.findViewById<ImageView>(R.id.artist_image1)
             val imageView2 = cardView.findViewById<ImageView>(R.id.artist_image2)
             val imageView3 = cardView.findViewById<ImageView>(R.id.artist_image3)

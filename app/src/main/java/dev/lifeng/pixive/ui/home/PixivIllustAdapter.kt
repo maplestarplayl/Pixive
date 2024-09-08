@@ -6,11 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.transform.RoundedCornersTransformation
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendIllusts
 
@@ -50,20 +50,9 @@ class PixivIllustAdapter : PagingDataAdapter<PixivRecommendIllusts.Illust, Pixiv
             //holder.artistName.text = illust.user.name
             //holder.text = illust.totalBookMarks.toString()
             val imageView = holder.image
-            //layoutParams.height = illust.height
-            //layoutParams.width = illust.width
-            //holder.image.layoutParams = layoutParams
             imageView.load(illust.imageUrls.medium){
-                size(illust.width,illust.height)
+                transformations(RoundedCornersTransformation(40f))
                 addHeader("Referer", "https://www.pixiv.net/")
-                target{ drawable ->
-                    val imageWidth = drawable.intrinsicWidth
-                    val imageHeight = drawable.intrinsicHeight
-                    val aspectRatio = imageHeight.toFloat() / imageWidth.toFloat()
-                    layoutParams.height = (layoutParams.width * aspectRatio).toInt()
-                    holder.image.layoutParams = layoutParams
-                    holder.image.setImageDrawable(drawable)
-                }
             }
             imageView.setOnClickListener(View.OnClickListener {
                 //val intent = Intent(parent.context, IllustActivity::class.java).apply {
