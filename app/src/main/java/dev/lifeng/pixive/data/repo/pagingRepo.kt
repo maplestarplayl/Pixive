@@ -15,7 +15,7 @@ object pagingRepo{
     private val pixivApi = PixivApi.create()
     fun getRecommendIllusts(): Flow<PagingData<PixivRecommendIllusts.Illust>> {
         return Pager(
-            config = PagingConfig(pageSize = 90),
+            config = PagingConfig(pageSize = 15, initialLoadSize = 30, prefetchDistance = 5, enablePlaceholders = true),
             pagingSourceFactory = { PixivPagingSource(pixivApi) }
         ).flow
     }

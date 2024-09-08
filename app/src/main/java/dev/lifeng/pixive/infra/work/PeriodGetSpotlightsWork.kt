@@ -6,27 +6,22 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.infra.datastore.SpotLightDataStore
+import kotlinx.coroutines.flow.catch
 
 class PeriodGetSpotlightsWork(ctx: Context, params: WorkerParameters): CoroutineWorker(ctx, params){
     override suspend fun doWork(): Result {
-        return try {
-            val response = repo.getSpotlightsFromNetwork()
-            when(response.isSuccess){
-                true -> {
-                    applicationContext.SpotLightDataStore.updateData { response.getOrNull()!! }
-                    Log.d("PeriodGetSpotlightsWork", "Successfully get spotlights")
-                    Result.success()
-                }
-                false -> {
-                    Log.d("PeriodGetSpotlightsWork", "Failed to get spotlights due to network error")
-                    Log.d("PeriodGetSpotlightsWork", "the exception is ${response.exceptionOrNull().toString()}")
-                    Result.failure()
-                }
+        try{
+            repo.getSpotlightsFlow().catch { e ->
+                Log.d("PeriodGetSpotlightsWork", "Failed to get spotlights due to network error")
+                Log.d("PeriodGetSpotlightsWork", "the exception is ${e.message}")
+                throw e
+            }.collect {
+                applicationContext.SpotLightDataStore.updateData { it }
+                Log.d("PeriodGetSpotlightsWork", "Successfully get spotlights")
             }
         }catch (e: Exception){
-            Log.d("PeriodGetSpotlightsWork", "Failed to get spotlights due to exception")
-            Log.d("PeriodGetSpotlightsWork", "the exception is ${e.message}")
             return Result.failure()
         }
+        return Result.success()
     }
 }
