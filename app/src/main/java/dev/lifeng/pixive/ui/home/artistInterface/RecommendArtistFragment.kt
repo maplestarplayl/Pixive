@@ -84,7 +84,7 @@ class RecommendArtistFragment : Fragment() {
     private fun ImageView.loadCard(url: String): Disposable{
         return this.load(url){
             crossfade(800)
-            size(350,350)
+            //size(350,350)
             addHeader("Referer", "https://www.pixiv.net/")
             placeholder(R.drawable.card_pic_placeholder)
             transformations(RoundedCornersTransformation(20f))

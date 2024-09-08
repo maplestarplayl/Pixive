@@ -117,6 +117,7 @@ class HomeFragment: Fragment() {
             val textView = cardView.findViewById<TextView>(R.id.spotlight_title)
             val imageView = cardView.findViewById<ImageView>(R.id.image)
             imageView.load(article.thumbnail){
+                placeholder(R.drawable.white_background)
                 addHeader("Referer", "https://www.pixiv.net/")
             }
             textView.text = article.title
@@ -130,12 +131,12 @@ class HomeFragment: Fragment() {
             //Log.d("HomeFragment", "userPreview: ${userPreview.user.id} ${userPreview.user.profileImageUrls.medium}")
             val cardView = LayoutInflater.from(this@HomeFragment.context).inflate(R.layout.recommend_artist_item, layoutManager, false) as CardView
             val imageView = cardView.findViewById<ImageView>(R.id.artist_image)
+            imageView.setBackgroundColor(0xFFFFF7FF.toInt())
             imageView.load(userPreview.user.profileImageUrls.medium){
                 addHeader("Referer", "https://www.pixiv.net/")
                 transformations(CircleCropTransformation())
             }
             layoutManager.addView(cardView)
-            //Log.d("HomeFragment","addRecommendArtist")
         }
     }
 }
