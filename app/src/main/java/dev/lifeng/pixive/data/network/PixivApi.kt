@@ -23,6 +23,12 @@ interface PixivApi {
     suspend fun getRecommendArtists(@Header("Authorization") token: String = PixiveApplication.TOKEN): PixivRecommendArtistsResponse
     @GET("/v1/illust/recommended?filter=for_ios&include_ranking_label=true")
     suspend fun getRecommendIllusts(@Header("Authorization") token: String = PixiveApplication.TOKEN): PixivRecommendIllusts
+    @POST("/v2/illust/bookmark/add")
+    @FormUrlEncoded
+    suspend fun addBookMark(@Header("Authorization") token: String = PixiveApplication.TOKEN, @Field("illust_id") id: Int,@Field("restrict") restrict: String = "private")
+    @POST("/v1/illust/bookmark/delete")
+    @FormUrlEncoded
+    suspend fun deleteBookMark(@Header("Authorization") token: String = PixiveApplication.TOKEN, @Field("illust_id") id: Int)
     companion object{
         private const val BASE_URL = "https://app-api.pixiv.net"
 

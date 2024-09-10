@@ -13,6 +13,8 @@ object repo{
     private val pixivAuthApi = PixivAuthApi.create()
     //elegant way to handle network request
     suspend fun auth(): Result<String> = tryAndCatch { pixivAuthApi.auth().accessToken }
+    suspend fun addBookMark(id: Int) = tryAndCatch { pixivApi.addBookMark(id = id) }
+    suspend fun deleteBookMark(id: Int) = tryAndCatch { pixivApi.deleteBookMark(id = id) }
     fun getSpotlightsFlow() = tryAndCatchReturnFlow { pixivApi.getSpotlights() }
     fun getRecommendArtistsFlow() = tryAndCatchReturnFlow { pixivApi.getRecommendArtists() }
 }

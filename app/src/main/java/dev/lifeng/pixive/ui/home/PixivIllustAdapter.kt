@@ -20,8 +20,10 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendIllusts
+import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.infra.extension.CustomRoundedCornersTransformation
 import dev.lifeng.pixive.infra.extension.saveImage
+import dev.lifeng.pixive.infra.extension.tryAndCatchChannelClosed
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -55,7 +57,6 @@ class PixivIllustAdapter(private val progressBar: CircularProgressIndicator) : P
         return ViewHolder(view)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val progressChannel = Channel<Int>()
@@ -63,41 +64,78 @@ class PixivIllustAdapter(private val progressBar: CircularProgressIndicator) : P
         if (illust != null) {
             holder.title.text = illust.title
             holder.artistName.text = illust.user.name
-            holder.heart.setOnClickListener {
-                holder.heart.setImageResource(R.drawable.favorite_filled_red)
-            }
+
+            addClickListenerForHeart(holder.heart,illust.id)
             if (illust.isBookmarked){
                 holder.heart.setImageResource(R.drawable.favorite_filled_red)
+                holder.heart.tag = "Favorite"
             }
-            val imageView = holder.image
 
+            val imageView = holder.image
+            addClickListenerForImage(imageView,illust,progressChannel)
             imageView.load(illust.imageUrls.medium){
                 transformations(CustomRoundedCornersTransformation(40f,40f,0f,0f))
                 addHeader("Referer", "https://www.pixiv.net/")
             }
-            imageView.setOnClickListener {
-                Log.d("PixivIllustAdapter", "click on illust: ${illust.id}")
-                it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
-                    illust.metaSinglePage.originalImageUrl?.let {
-                        launch{ saveImage(PixiveApplication.context, it, illust.title, progressChannel) }
-                        launch{
-                            progressBar.visibility = View.VISIBLE
-                            try{
-                                while (progressChannel.isClosedForSend.not()) {
-                                    val progress = progressChannel.receive()
-                                    progressBar.progress = progress
-                                    Log.d("PixivIllustAdapter", "progress is : $progress")
-                                }
-                            }catch (e: Exception){
-                                Log.d("PixivIllustAdapter", "progressChannel is closed")
-                                withContext(Dispatchers.Main){ progressBar.visibility = View.GONE }
-                            }
-                        }
-                        ""
-                    } ?: run {
-                        Toast.makeText(PixiveApplication.context, "原图链接为空", Toast.LENGTH_SHORT).show()
-                        Log.d("PixivIllustAdapter", "originalImageUrl is null") }
+        }
+    }
+
+
+
+    //Mainly used for addBookMark and delete Bookmark
+    private fun addClickListenerForHeart(heartButton: ImageButton,illustId: Int){
+        heartButton.setOnClickListener {
+            when (heartButton.tag){
+                "notFavorite" -> {
+                    heartButton.tag = "Favorite"
+                    heartButton.setImageResource(R.drawable.favorite_filled_red)
+                    it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                        Log.d("PixivIllustAdapter", "ready to add bookmark: $illustId")
+                        repo.addBookMark(illustId)
+                    }
                 }
+                "Favorite" -> {
+                    heartButton.tag = "notFavorite"
+                    heartButton.setImageResource(R.drawable.favorite_24dp_5f6368_fill0_wght400_grad0_opsz24)
+                    it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                        Log.d("PixivIllustAdapter", "ready to delete bookmark: $illustId")
+                        repo.deleteBookMark(illustId)
+                    }
+                }
+            }
+        }
+    }
+    //Mainly used for download image
+    @OptIn(DelicateCoroutinesApi::class)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun addClickListenerForImage(imageView: ImageView, illust: PixivRecommendIllusts.Illust, progressChannel: Channel<Int>){
+        imageView.setOnClickListener {
+            Log.d("PixivIllustAdapter", "click on illust: ${illust.id}")
+            it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+                illust.metaSinglePage.originalImageUrl?.let {
+                    launch{ saveImage(PixiveApplication.context, it, illust.title, progressChannel,
+                        onSuccess = {Toast.makeText(PixiveApplication.context,"Download Success",Toast.LENGTH_SHORT).show()},
+                        onFailure = {Toast.makeText(PixiveApplication.context,"Download Failed",Toast.LENGTH_SHORT).show()}) }
+                    launch{
+                        progressBar.visibility = View.VISIBLE
+                        //receive progress from channel
+                        tryAndCatchChannelClosed(block =  {
+                            while (progressChannel.isClosedForSend.not()) {
+                                val progress = progressChannel.receive()
+                                progressBar.progress = progress
+                                Log.d("PixivIllustAdapter", "progress is : $progress")
+                            }
+                        })
+                        //after channel is closed, hide progress bar
+                        withContext(Dispatchers.Main){
+                            progressBar.visibility = View.GONE
+                            progressBar.progress = 0
+                        }
+                    }
+                    ""
+                } ?: run {
+                    Toast.makeText(PixiveApplication.context, "原图链接为空", Toast.LENGTH_SHORT).show()
+                    Log.d("PixivIllustAdapter", "originalImageUrl is null") }
             }
         }
     }
