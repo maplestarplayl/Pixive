@@ -9,7 +9,6 @@ import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import coil.ImageLoader
 import coil.request.ErrorResult
@@ -64,7 +63,9 @@ class CustomRoundedCornersTransformation(
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun saveImage(context: Context, imageUrl: String, title:String,channel: Channel<Int>){
+suspend fun saveImage(context: Context, imageUrl: String,
+                      title:String,channel: Channel<Int>,
+                      onSuccess: () -> Unit, onFailure: () -> Unit) {
     val okHttpClient = OkHttpClient.Builder()
                             .addNetworkInterceptor { chain ->
                                 val originalResponse = chain.proceed(chain.request())
@@ -84,22 +85,17 @@ suspend fun saveImage(context: Context, imageUrl: String, title:String,channel: 
 
     when (val result = loader.execute(request)){
         is ErrorResult -> {
-            channel.close(Exception("Complete"))
+            channel.close(ChannelClosedException("Complete"))
             result.throwable.printStackTrace()
-            Toast.makeText(context, "Load Failed", Toast.LENGTH_SHORT).show()
+            onFailure()
         }
         is SuccessResult -> {
-            channel.close(Exception("Complete"))
+            channel.close(ChannelClosedException("Complete"))
             val bitmap = (result.drawable as BitmapDrawable).bitmap
             val flag = saveImageToGallery(context,bitmap,title)
             when(flag) {
-                true -> {
-                    Toast.makeText(context, "Save Success", Toast.LENGTH_SHORT).show()
-                }
-
-                false -> {
-                    Toast.makeText(context, "Save Failed", Toast.LENGTH_SHORT).show()
-                }
+                true -> onSuccess()
+                false -> onFailure()
             }
         }
     }

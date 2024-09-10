@@ -32,10 +32,12 @@ class ProgressResponseBody(private val responseBody: okhttp3.ResponseBody,
                 totalBytesRead += if (bytesRead != -1L) bytesRead else 0
 
                 // 计算并发送下载进度
-                val progress = (totalBytesRead * 100 / contentLength()).toInt()
-                runBlocking {
-                    Log.d("DownloadProgress", "progress: $progress")
-                    progressCallback(progress)
+                if (contentLength() != -1L) {
+                    val progress = (totalBytesRead * 100 / contentLength()).toInt()
+                    runBlocking {
+                        Log.d("DownloadProgress", "progress: $progress")
+                        progressCallback(progress)
+                    }
                 }
                 return bytesRead
             }
