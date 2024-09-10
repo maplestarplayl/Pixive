@@ -44,8 +44,17 @@
     <Space
         android:layout_width="match_parent"
         android:layout_height="40dp"/>
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/indeterminateBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        android:visibility="gone"
+        />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+
 </LinearLayout>

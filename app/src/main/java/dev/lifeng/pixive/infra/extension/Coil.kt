@@ -8,6 +8,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import coil.ImageLoader
@@ -17,6 +18,8 @@ import coil.request.SuccessResult
 import coil.size.Size
 import coil.transform.Transformation
 import dev.lifeng.pixive.infra.app.saveImageToGallery
+import kotlinx.coroutines.channels.Channel
+import okhttp3.OkHttpClient
 
 class CustomRoundedCornersTransformation(
     private val topLeft: Float,
@@ -61,19 +64,32 @@ class CustomRoundedCornersTransformation(
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-suspend fun saveImage(context: Context, imageUrl: String, title:String){
-    val loader = ImageLoader(context)
+suspend fun saveImage(context: Context, imageUrl: String, title:String,channel: Channel<Int>){
+    val okHttpClient = OkHttpClient.Builder()
+                            .addNetworkInterceptor { chain ->
+                                val originalResponse = chain.proceed(chain.request())
+                                originalResponse.newBuilder()
+                                    .body(ProgressResponseBody(originalResponse.body!!) {
+                                        Log.d("DownloadProgress", "progress send : $it")
+                                        channel.trySend(it)
+                                    })
+                                    .build()
+                            }
+    val loader = ImageLoader.Builder(context)
+        .okHttpClient(okHttpClient.build())
+        .build()
     val request = ImageRequest.Builder(context)
         .data(imageUrl).addHeader("Referer", "https://www.pixiv.net/")
         .build()
 
-    val result = loader.execute(request)
-    when (result){
+    when (val result = loader.execute(request)){
         is ErrorResult -> {
+            channel.close(Exception("Complete"))
             result.throwable.printStackTrace()
             Toast.makeText(context, "Load Failed", Toast.LENGTH_SHORT).show()
         }
         is SuccessResult -> {
+            channel.close(Exception("Complete"))
             val bitmap = (result.drawable as BitmapDrawable).bitmap
             val flag = saveImageToGallery(context,bitmap,title)
             when(flag) {

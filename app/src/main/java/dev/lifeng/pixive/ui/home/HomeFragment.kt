@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
 import coil.request.CachePolicy
 import coil.transform.CircleCropTransformation
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendArtistsResponse
@@ -36,14 +37,17 @@ class HomeFragment: Fragment() {
     private val viewModel: HomeViewModel by viewModels(
         ownerProducer = { requireActivity() }
     )
-    private val adapter = PixivIllustAdapter()
+    private lateinit var adapter : PixivIllustAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding!!.root
+        adapter = PixivIllustAdapter(view.findViewById(R.id.indeterminateBar))
         return view
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val progressBar = view.findViewById<CircularProgressIndicator>(R.id.indeterminateBar)
+        progressBar.progress = 10
         Log.d("HomeFragment", "savedInstance is $savedInstanceState")
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
         recommendArtistsLayout.setOnClickListener(View.OnClickListener {
