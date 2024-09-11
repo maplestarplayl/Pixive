@@ -1,5 +1,6 @@
 package dev.lifeng.pixive.ui.home
 
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingDataAdapter
@@ -67,7 +69,7 @@ class PixivIllustAdapter(private val progressBar: CircularProgressIndicator) : P
 
             addClickListenerForHeart(holder.heart,illust.id)
             if (illust.isBookmarked){
-                holder.heart.setImageResource(R.drawable.favorite_filled_red)
+                holder.heart.setImageResource(R.drawable.favorite_empty)
                 holder.heart.tag = "Favorite"
             }
 
@@ -87,8 +89,11 @@ class PixivIllustAdapter(private val progressBar: CircularProgressIndicator) : P
         heartButton.setOnClickListener {
             when (heartButton.tag){
                 "notFavorite" -> {
+                    val increaseHeartColorAnime = ContextCompat.getDrawable(PixiveApplication.context,R.drawable.heart_color_animation) as AnimatedVectorDrawable
+                    heartButton.setImageDrawable(increaseHeartColorAnime)
+                    increaseHeartColorAnime.start()
                     heartButton.tag = "Favorite"
-                    heartButton.setImageResource(R.drawable.favorite_filled_red)
+                    //heartButton.setImageResource(R.drawable.favorite_filled)
                     it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                         Log.d("PixivIllustAdapter", "ready to add bookmark: $illustId")
                         repo.addBookMark(illustId)
@@ -96,7 +101,10 @@ class PixivIllustAdapter(private val progressBar: CircularProgressIndicator) : P
                 }
                 "Favorite" -> {
                     heartButton.tag = "notFavorite"
-                    heartButton.setImageResource(R.drawable.favorite_24dp_5f6368_fill0_wght400_grad0_opsz24)
+                    val decreaseHeartColorAnime = ContextCompat.getDrawable(PixiveApplication.context,R.drawable.heart_decrease_animation) as AnimatedVectorDrawable
+                    heartButton.setImageDrawable(decreaseHeartColorAnime)
+                    decreaseHeartColorAnime.start()
+                    //heartButton.setImageResource(R.drawable.favorite_empty)
                     it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                         Log.d("PixivIllustAdapter", "ready to delete bookmark: $illustId")
                         repo.deleteBookMark(illustId)
