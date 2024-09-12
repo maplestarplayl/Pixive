@@ -16,3 +16,7 @@ data class SpotArticle(val id: Int,
                        val publishDate: String,
                        val category: String,
                        @SerialName("subcategory_label")val subCategory: String)
+
+fun SpotArticle(): SpotArticle {
+    return SpotArticle(0,"","","","","","","")
+}

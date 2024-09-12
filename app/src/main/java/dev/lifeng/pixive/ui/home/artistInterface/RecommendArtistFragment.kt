@@ -42,7 +42,7 @@ class RecommendArtistFragment : Fragment() {
         viewModel.back = true
         val recommendArtistsLayout = view.findViewById<LinearLayout>(R.id.artist_list_layout)
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
-            if (it.userPreviews.isNotEmpty()) {
+            if (it.nextUrl != "") {
                 Log.d("RecommendArtistFragment", "addArtistsView ${it.userPreviews.size}")
                 addArtistsView(it, recommendArtistsLayout)
             }else{

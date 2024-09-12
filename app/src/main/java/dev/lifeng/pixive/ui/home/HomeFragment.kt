@@ -41,12 +41,28 @@ class HomeFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding!!.root
-        adapter = PixivIllustAdapter(view.findViewById(R.id.indeterminateBar))
+        adapter = PixivIllustAdapter(this.requireContext())
         return view
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        lifecycleScope.launch(Dispatchers.IO) {
+//            for(it in 1 ..100) {
+//                delay(100)
+//                progressChannel.send(it)
+//                Log.d("HomeFragment", "progressChannel send $it")
+//            }
+//        }
         Log.d("HomeFragment", "savedInstance is $savedInstanceState")
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
+//        val progressBar = binding!!.progressBar as ProgressBar
+//        progressBar.setOnClickListener {
+//            lifecycleScope.launch {
+//                for (i in progressChannel) {
+//                    progressBar.setProgress(i)
+//                    Log.d("HomeFragment", "progressChannel consume $it")
+//                }
+//            }
+//        }
         recommendArtistsLayout.setOnClickListener(View.OnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, RecommendArtistFragment())
@@ -95,7 +111,7 @@ class HomeFragment: Fragment() {
         }
         Log.d("HomeFragment", "Update Recommend Artists")
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
-            if (it.userPreviews.isEmpty()) {
+            if (it.nextUrl == "") {
                 showErrorMsg("加载用户头像时网络错误", it.nextUrl)
             } else {
                 addRecommendArtist(it, recommendArtistsLayout)
@@ -129,6 +145,7 @@ class HomeFragment: Fragment() {
             val imageView = cardView.findViewById<ImageView>(R.id.image)
             imageView.load(article.thumbnail){
                 diskCachePolicy(CachePolicy.ENABLED)
+                crossfade(800)
                 placeholder(R.drawable.white_background)
                 addHeader("Referer", "https://www.pixiv.net/")
             }
@@ -160,6 +177,7 @@ class HomeFragment: Fragment() {
             imageView.setBackgroundColor(0xFFFFF7FF.toInt())
             imageView.load(userPreview.user.profileImageUrls.medium){
                 addHeader("Referer", "https://www.pixiv.net/")
+                crossfade(800)
                 transformations(CircleCropTransformation())
             }
             layoutManager.addView(cardView)
