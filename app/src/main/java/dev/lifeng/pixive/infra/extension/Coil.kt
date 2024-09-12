@@ -65,7 +65,7 @@ class CustomRoundedCornersTransformation(
 @RequiresApi(Build.VERSION_CODES.Q)
 suspend fun saveImage(context: Context, imageUrl: String,
                       title:String,channel: Channel<Int>,
-                      onSuccess: () -> Unit, onFailure: () -> Unit) {
+                      onSuccess: suspend () -> Unit, onFailure: suspend () -> Unit) {
     val okHttpClient = OkHttpClient.Builder()
                             .addNetworkInterceptor { chain ->
                                 val originalResponse = chain.proceed(chain.request())

@@ -106,7 +106,7 @@ class HomeFragment: Fragment() {
     //加载数据
     private suspend fun loadData(viewModel: HomeViewModel, recommendArtistsLayout: LinearLayout,savedInstanceState: Bundle?) {
 
-        withTimeoutAndCatch(3000,
+        withTimeoutAndCatch(5000,
             block = {
             PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrThrow()
         },  onErrorAction = {
@@ -128,6 +128,7 @@ class HomeFragment: Fragment() {
             if (it.articles.isEmpty()) {
                 showErrorMsg("加载特辑时网络错误")
             } else {
+                Log.d("HomeFragment", "Spotlights: ${it.articles}")
                 addCardView(it, binding!!.highlightLayout)
             }
         }
@@ -147,6 +148,9 @@ class HomeFragment: Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun addCardView(response: PixivSpotlightResponse, linearLayoutManager: LinearLayout) {
         response.articles.forEach { article ->
+            if (article.thumbnail == "") {
+                return@forEach
+            }
             val cardView = LayoutInflater.from(this@HomeFragment.context).inflate(R.layout.card_item, linearLayoutManager, false) as CardView
             val textView = cardView.findViewById<TextView>(R.id.spotlight_title)
             val imageView = cardView.findViewById<ImageView>(R.id.image)

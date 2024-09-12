@@ -18,6 +18,7 @@ class PeriodGetSpotlightsWork(ctx: Context, params: WorkerParameters): Coroutine
             }.collect {
                 applicationContext.SpotLightDataStore.updateData { it }
                 Log.d("PeriodGetSpotlightsWork", "Successfully get spotlights")
+                Log.d("PeriodGetSpotlightsWork", "the size of spotlights is ${it.articles}")
             }
         }catch (e: Exception){
             return Result.failure()

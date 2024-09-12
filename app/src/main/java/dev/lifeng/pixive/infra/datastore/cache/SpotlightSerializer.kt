@@ -47,6 +47,6 @@ object SpotlightSerializer : Serializer<PixivSpotlightResponse> {
 }
 
 val Context.SpotLightDataStore: DataStore<PixivSpotlightResponse> by dataStore(
-    fileName = "spotlight1.json",
+    fileName = "spotlight2.json",
     serializer = SpotlightSerializer
 )

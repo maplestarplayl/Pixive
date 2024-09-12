@@ -1,5 +1,6 @@
 package dev.lifeng.pixive.ui.home
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -135,7 +136,10 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                         }
                     }
                     launch{ saveImage(PixiveApplication.context, it, illust.title, progressChannel,
-                        onSuccess = {Toast.makeText(PixiveApplication.context,"Download Success",Toast.LENGTH_SHORT).show()},
+                        onSuccess = {
+                            delay(1000)
+                            Toast.makeText(PixiveApplication.context,"Download Success",Toast.LENGTH_SHORT).show()
+                                    },
                         onFailure = {Toast.makeText(PixiveApplication.context,"Download Failed",Toast.LENGTH_SHORT).show()}) }
                     launch{
                         val progressBar = ProgressBar(PixiveApplication.context)
@@ -152,6 +156,7 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                         //after channel is closed, hide progress bar
                         withContext(Dispatchers.Main){
                             progressBar.setProgress(100)
+                            delay(700)
                             progressBar.visibility = View.GONE
                             progressBar.setProgress(0)
                         }
@@ -173,7 +178,11 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
             PixelFormat.TRANSLUCENT
         )
         layoutParams.gravity = android.view.Gravity.BOTTOM
+        progressBar.alpha = 0f
         windowManager.addView(progressBar, layoutParams)
+        val fadeIn = ObjectAnimator.ofFloat(progressBar, "alpha", 0f, 1f)
+        fadeIn.duration = 500
+        fadeIn.start()
     }
 
 }
