@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel: ViewModel() {
     var back: Boolean = false
-    val recommendArtistsFlow = MutableStateFlow(PixivRecommendArtistsResponse(listOf(),"placeholder"))
+    val recommendArtistsFlow = MutableStateFlow(PixivRecommendArtistsResponse(listOf(),""))
 
     fun updateRecommendArtists() {
         viewModelScope.launch{
@@ -31,7 +31,7 @@ class HomeViewModel: ViewModel() {
                 .catch { e ->
                     e.message?.let { Log.d("HomeViweModel", "catch error in HomeViewModel") }
                     //here using a hack technique to emit a empty list of artists and use nextUrl field to store the error message
-                    emit(PixivRecommendArtistsResponse(listOf(), e.message ?: ""))
+                    emit(PixivRecommendArtistsResponse(listOf(), "networkError"))
                 }.collect {
                     recommendArtistsFlow.value = it
                 }

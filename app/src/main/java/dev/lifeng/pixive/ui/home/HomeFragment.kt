@@ -28,6 +28,7 @@ import dev.lifeng.pixive.data.model.response.PixivSpotlightResponse
 import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.databinding.FragmentHomeBinding
 import dev.lifeng.pixive.infra.extension.collectIn
+import dev.lifeng.pixive.infra.extension.withTimeoutAndCatch
 import dev.lifeng.pixive.ui.home.artistInterface.RecommendArtistFragment
 import kotlinx.coroutines.launch
 
@@ -104,15 +105,21 @@ class HomeFragment: Fragment() {
     }
     //加载数据
     private suspend fun loadData(viewModel: HomeViewModel, recommendArtistsLayout: LinearLayout,savedInstanceState: Bundle?) {
-        PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrNull()
+
+        withTimeoutAndCatch(3000,
+            block = {
+            PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrThrow()
+        },  onErrorAction = {
+            showErrorMsg("获取Token时网络错误")
+        })
         Log.d("HomeFragment", "Token is ${PixiveApplication.TOKEN}")
         if (!viewModel.back) {
             viewModel.updateRecommendArtists()
         }
         Log.d("HomeFragment", "Update Recommend Artists")
         viewModel.recommendArtistsFlow.collectIn(viewLifecycleOwner) {
-            if (it.nextUrl == "") {
-                showErrorMsg("加载用户头像时网络错误", it.nextUrl)
+            if (it.nextUrl ==  "networkError") {
+                showErrorMsg("加载用户头像时网络错误")
             } else {
                 addRecommendArtist(it, recommendArtistsLayout)
             }
