@@ -108,6 +108,11 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                     it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                         Log.d("PixivIllustAdapter", "ready to add bookmark: $illustId")
                         repo.addBookMark(illustId)
+                            .onSuccess {
+                                Toast.makeText(PixiveApplication.context,"Add Bookmark Success",Toast.LENGTH_SHORT).show()
+                        }   .onFailure {
+                                Toast.makeText(PixiveApplication.context,"Add Bookmark Failed",Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 "Favorite" -> {
@@ -119,6 +124,11 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                     it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
                         Log.d("PixivIllustAdapter", "ready to delete bookmark: $illustId")
                         repo.deleteBookMark(illustId)
+                            .onSuccess {
+                                Toast.makeText(PixiveApplication.context,"Delete Bookmark Success",Toast.LENGTH_SHORT).show()
+                        }   .onFailure {
+                                Toast.makeText(PixiveApplication.context,"Delete Bookmark Failed",Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
