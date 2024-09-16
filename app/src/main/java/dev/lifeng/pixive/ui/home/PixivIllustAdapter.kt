@@ -81,6 +81,11 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
             val imageView = holder.image
             addClickListenerForImage(imageView,illust,progressChannel)
             imageView.load(illust.imageUrls.medium){
+                val screenWidth = context.resources.displayMetrics.widthPixels
+                val spanCount = 2
+                val imageWidth = (screenWidth / spanCount)
+                val imageHeight = (imageWidth.toFloat() / illust.width.toFloat() * illust.height.toFloat()).toInt()
+                size(imageWidth,imageHeight)
                 transformations(CustomRoundedCornersTransformation(40f,40f,0f,0f))
                 addHeader("Referer", "https://www.pixiv.net/")
                 crossfade(800)
