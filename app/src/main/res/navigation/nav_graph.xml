@@ -10,6 +10,9 @@
         android:label="Fragment A">
         <action
             android:id="@+id/action_from_home_to_recommend_artists"
+            app:enterAnim="@anim/enter_scale"
+            app:exitAnim="@anim/exit_fade_out"
+            app:popExitAnim="@anim/pop_exit_fade_out"
             app:destination="@id/RecommendArtists" />
     </fragment>
 

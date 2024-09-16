@@ -43,12 +43,14 @@
     <include  android:id="@+id/recmomend_artists" layout="@layout/recommend_artists"/>
     <Space
         android:layout_width="match_parent"
-        android:layout_height="40dp"/>
+        android:layout_height="30dp"/>
+
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/indeterminateBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="false"
+        android:progress="0"
         android:visibility="gone"
         />
     <androidx.recyclerview.widget.RecyclerView
