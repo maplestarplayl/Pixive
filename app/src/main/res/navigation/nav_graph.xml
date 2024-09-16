@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/Home">
+
+    <fragment
+        android:id="@+id/Home"
+        android:name="dev.lifeng.pixive.ui.home.HomeFragment"
+        android:label="Fragment A">
+        <action
+            android:id="@+id/action_from_home_to_recommend_artists"
+            app:destination="@id/RecommendArtists" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/RecommendArtists"
+        android:name="dev.lifeng.pixive.ui.home.artistInterface.RecommendArtistFragment"
+        android:label="Fragment B" />
+</navigation>

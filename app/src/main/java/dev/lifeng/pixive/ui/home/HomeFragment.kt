@@ -15,6 +15,7 @@ import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -29,7 +30,6 @@ import dev.lifeng.pixive.data.repo.repo
 import dev.lifeng.pixive.databinding.FragmentHomeBinding
 import dev.lifeng.pixive.infra.extension.collectIn
 import dev.lifeng.pixive.infra.extension.withTimeoutAndCatch
-import dev.lifeng.pixive.ui.home.artistInterface.RecommendArtistFragment
 import kotlinx.coroutines.launch
 
 class HomeFragment: Fragment() {
@@ -46,30 +46,11 @@ class HomeFragment: Fragment() {
         return view
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            for(it in 1 ..100) {
-//                delay(100)
-//                progressChannel.send(it)
-//                Log.d("HomeFragment", "progressChannel send $it")
-//            }
-//        }
         Log.d("HomeFragment", "savedInstance is $savedInstanceState")
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
-//        val progressBar = binding!!.progressBar as ProgressBar
-//        progressBar.setOnClickListener {
-//            lifecycleScope.launch {
-//                for (i in progressChannel) {
-//                    progressBar.setProgress(i)
-//                    Log.d("HomeFragment", "progressChannel consume $it")
-//                }
-//            }
-//        }
-        recommendArtistsLayout.setOnClickListener(View.OnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, RecommendArtistFragment())
-                .addToBackStack(null)
-                .commit()
-        })
+        recommendArtistsLayout.setOnClickListener{
+            findNavController().navigate(R.id.action_from_home_to_recommend_artists)
+        }
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.adapter = adapter
