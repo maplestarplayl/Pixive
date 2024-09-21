@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- fragment_web_view.xml -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_web_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.webkit.WebView
+        android:id="@+id/web_vieww"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

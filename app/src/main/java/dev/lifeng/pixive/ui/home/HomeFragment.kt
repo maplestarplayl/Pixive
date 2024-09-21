@@ -2,6 +2,7 @@ package dev.lifeng.pixive.ui.home
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -142,13 +143,27 @@ class HomeFragment: Fragment() {
                 addHeader("Referer", "https://www.pixiv.net/")
             }
             textView.text = article.title
+            var downTime:Long = 0
+            val CLICK_THRESHOLD = 200
             cardView.setOnTouchListener { v, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
+                        downTime = SystemClock.elapsedRealtime()
                         v.animate().translationZ(20f).duration = 150
                         v.animate().rotationY(5f).setDuration(500)
                     }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    MotionEvent.ACTION_UP -> {
+                        v.animate().translationZ(0f).duration = 150
+                        v.animate().rotationY(0f).setDuration(500)
+                        val uptime = SystemClock.elapsedRealtime()
+                        val duration = uptime - downTime
+                        if (duration < CLICK_THRESHOLD){
+                            val bundle = Bundle()
+                            bundle.putString("url",article.articleUrl)
+                            findNavController().navigate(R.id.action_from_home_to_webview,bundle)
+                        }
+                    }
+                    MotionEvent.ACTION_CANCEL -> {
                         v.animate().translationZ(0f).duration = 150
                         v.animate().rotationY(0f).setDuration(500)
                     }
