@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/homeIcon"
+        android:icon="@drawable/home_24dp_5f6368_fill0_wght400_grad0_opsz24"
+        android:title="Home" />
+    <item
+        android:id="@+id/rankIcon"
+        android:icon="@drawable/equalizer_24dp_5f6368_fill0_wght400_grad0_opsz24"
+        android:title="Rank" />
+    <item
+        android:id="@+id/heartIcon"
+        android:icon="@drawable/favorite_24dp_5f6368_fill0_wght400_grad0_opsz24"
+        android:title="QuickLook">
+    </item>
+    <item
+        android:id="@+id/searchIcon"
+        android:icon="@drawable/search_24dp_5f6368_fill0_wght400_grad0_opsz24"
+        android:title="Search">
+
+    </item>
+    <item
+        android:id="@+id/settingIcon"
+        android:icon="@drawable/settings_24dp_5f6368_fill0_wght400_grad0_opsz24"
+        android:title="Setting">
+    </item>
+</menu>

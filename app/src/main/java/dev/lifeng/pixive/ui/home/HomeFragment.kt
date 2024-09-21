@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import coil.load
 import coil.request.CachePolicy
 import coil.transform.CircleCropTransformation
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendArtistsResponse
@@ -41,6 +42,7 @@ class HomeFragment: Fragment() {
     private lateinit var adapter : PixivIllustAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding!!.root
         adapter = PixivIllustAdapter(this.requireContext())
@@ -48,6 +50,7 @@ class HomeFragment: Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d("HomeFragment", "savedInstance is $savedInstanceState")
+        val navigationBar = requireActivity().findViewById<BottomNavigationView>(R.id.navigation_view)
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
         recommendArtistsLayout.setOnClickListener{
             findNavController().navigate(R.id.action_from_home_to_recommend_artists)
@@ -55,6 +58,7 @@ class HomeFragment: Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         recyclerView.adapter = adapter
+        addScollListenerForrecyclerView(recyclerView,navigationBar)
         lifecycleScope.launch {
             loadData(viewModel, recommendArtistsLayout,savedInstanceState)
         }
@@ -88,7 +92,7 @@ class HomeFragment: Fragment() {
     //加载数据
     private suspend fun loadData(viewModel: HomeViewModel, recommendArtistsLayout: LinearLayout,savedInstanceState: Bundle?) {
 
-        withTimeoutAndCatch(5000,
+        withTimeoutAndCatch(7000,
             block = {
             PixiveApplication.TOKEN = "Bearer " + repo.auth().getOrThrow()
         },  onErrorAction = {
@@ -118,6 +122,30 @@ class HomeFragment: Fragment() {
             adapter.submitData(it)
         }
 
+    }
+
+    private fun addScollListenerForrecyclerView(recyclerView:RecyclerView,navigationBar:BottomNavigationView){
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                when(dy > 0){
+                    true ->{
+//                        navigationBar.visibility = View.GONE
+                        navigationBar.animate()
+                            .translationY(navigationBar.height.toFloat()) // 向下移动到底部，隐藏
+                            .setDuration(200) // 设置动画持续时间
+                            .start()
+                    }
+                    false ->{
+//                        navigationBar.visibility = View.VISIBLE
+                        navigationBar.animate()
+                            .translationY(0f) // 回到原位置，显示
+                            .setDuration(200) // 设置动画持续时间
+                            .start()
+                    }
+                }
+            }
+        })
     }
 
     private fun showErrorMsg(msg: String){
