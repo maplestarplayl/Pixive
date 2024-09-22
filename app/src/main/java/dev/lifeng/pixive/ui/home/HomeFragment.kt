@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -56,8 +57,28 @@ class HomeFragment: Fragment() {
             findNavController().navigate(R.id.action_from_home_to_recommend_artists)
         }
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
+        // Postpone the transition until the RecyclerView has finished laying out and drawing the correct position
+        postponeEnterTransition()
         recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        // Set up the adapter and postpone the enter transition
         recyclerView.adapter = adapter
+
+        /** wired workaround **/
+        recyclerView.viewTreeObserver.addOnScrollChangedListener(
+            object : ViewTreeObserver.OnScrollChangedListener {
+                override fun onScrollChanged() {
+                    Log.d("TEST","chanfedddddd")
+                    // Ensure we remove the listener after it triggers once
+                    recyclerView.viewTreeObserver.removeOnScrollChangedListener(this)
+
+                    // Start the postponed enter transition
+                    startPostponedEnterTransition()
+
+                    // Return true to continue with the draw
+                   //return true
+                }
+            }
+        )
         addScollListenerForrecyclerView(recyclerView,navigationBar)
         lifecycleScope.launch {
             loadData(viewModel, recommendArtistsLayout,savedInstanceState)

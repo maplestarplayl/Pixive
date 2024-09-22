@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,8 +17,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.FragmentNavigator
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +34,6 @@ import dev.lifeng.pixive.infra.extension.CustomRoundedCornersTransformation
 import dev.lifeng.pixive.infra.extension.saveImage
 import dev.lifeng.pixive.infra.extension.tryAndCatchChannelClosed
 import dev.lifeng.pixive.ui.home.views.ProgressBar
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -71,7 +74,6 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
         if (illust != null) {
             holder.title.text = illust.title
             holder.artistName.text = illust.user.name
-
             addClickListenerForHeart(holder.heart,illust.id)
             if (illust.isBookmarked){
                 holder.heart.setImageResource(R.drawable.favorite_empty)
@@ -79,7 +81,10 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
             }
 
             val imageView = holder.image
-            addClickListenerForImage(imageView,illust,progressChannel)
+            ViewCompat.setTransitionName(imageView,"shared_image${illust.id}")
+            Log.d("TEST","the transition name is ${imageView.transitionName}")
+            addClickListenerForImage2(imageView,illust)
+            addLongClickListenerForImage(imageView,illust,progressChannel)
             val screenWidth = context.resources.displayMetrics.widthPixels
             val spanCount = 2
             val imageWidth = (screenWidth / spanCount)
@@ -89,7 +94,6 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                 val layoutParams = imageView.layoutParams
                 layoutParams.width = imageWidth
                 layoutParams.height = imageHeight
-                imageView.layoutParams = layoutParams
                 transformations(CustomRoundedCornersTransformation(40f,40f,0f,0f))
                 addHeader("Referer", "https://www.pixiv.net/")
                 crossfade(800)
@@ -115,9 +119,9 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                         repo.addBookMark(illustId)
                             .onSuccess {
                                 Toast.makeText(PixiveApplication.context,"Add Bookmark Success",Toast.LENGTH_SHORT).show()
-                        }   .onFailure {
+                            }   .onFailure {
                                 Toast.makeText(PixiveApplication.context,"Add Bookmark Failed",Toast.LENGTH_SHORT).show()
-                        }
+                            }
                     }
                 }
                 "Favorite" -> {
@@ -131,19 +135,31 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                         repo.deleteBookMark(illustId)
                             .onSuccess {
                                 Toast.makeText(PixiveApplication.context,"Delete Bookmark Success",Toast.LENGTH_SHORT).show()
-                        }   .onFailure {
+                            }   .onFailure {
                                 Toast.makeText(PixiveApplication.context,"Delete Bookmark Failed",Toast.LENGTH_SHORT).show()
-                        }
+                            }
                     }
                 }
             }
         }
     }
-    //Mainly used for download image
-    @OptIn(DelicateCoroutinesApi::class)
+
+    private fun addClickListenerForImage2(imageView: ImageView,illust: PixivRecommendIllusts.Illust){
+        imageView.setOnClickListener{
+
+            val bundle = Bundle().apply {
+                putParcelable("illust_detail",illust)
+            }
+            val extras = FragmentNavigator.Extras.Builder()
+                .addSharedElement(imageView,imageView.transitionName).build()
+            //val extras = FragmentNavigatorExtras(imageView to "shared_image2")
+            it.findNavController().navigate(R.id.action_from_home_to_illust_detail,bundle,null,extras)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun addClickListenerForImage(imageView: ImageView, illust: PixivRecommendIllusts.Illust, progressChannel: Channel<Int>){
-        imageView.setOnClickListener {
+    private fun addLongClickListenerForImage(imageView: ImageView, illust: PixivRecommendIllusts.Illust, progressChannel: Channel<Int>){
+        imageView.setOnLongClickListener {
             val testChannel = Channel<Int>()
             Log.d("PixivIllustAdapter", "click on illust: ${illust.id}")
             it.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
@@ -186,6 +202,7 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                     Toast.makeText(PixiveApplication.context, "原图链接为空", Toast.LENGTH_SHORT).show()
                     Log.d("PixivIllustAdapter", "originalImageUrl is null") }
             }
+            true
         }
     }
     private fun addProgressBar(progressBar: ProgressBar,context: Context){

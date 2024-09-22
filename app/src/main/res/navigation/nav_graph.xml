@@ -16,8 +16,10 @@
             app:destination="@id/RecommendArtists" />
         <action
             android:id="@+id/action_from_home_to_webview"
-            app:destination="@id/WebView">
-        </action>
+            app:destination="@id/WebView"/>
+        <action
+            android:id="@+id/action_from_home_to_illust_detail"
+            app:destination="@id/illust_detail"/>
     </fragment>
 
     <fragment
@@ -41,4 +43,18 @@
             app:argType="string">
         </argument>
     </fragment>
+    <fragment
+        android:id="@+id/illust_detail"
+        android:name="dev.lifeng.pixive.ui.common.illustration.IllustDetailFragment">
+        <action
+            android:id="@+id/action_from_illust_detail_to_home"
+            app:popUpTo="@id/Home"
+            app:popUpToInclusive="false"
+            app:restoreState="true"
+            />
+        <argument
+            android:name="illust_detail"
+            app:argType="dev.lifeng.pixive.data.model.response.PixivRecommendIllusts$Illust"/>
+    </fragment>
+
 </navigation>
