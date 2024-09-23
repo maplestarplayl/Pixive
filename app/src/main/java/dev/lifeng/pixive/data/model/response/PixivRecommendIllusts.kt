@@ -18,7 +18,9 @@ data class PixivRecommendIllusts(
         val imageUrls: ImageUrls,
         val caption: String,
         val user: User,
-        //val tags: List<Tag>,
+        val tags: List<Tag>,
+        val createDate: String,
+        val pageCount: Int,
         val totalView: Int,
         val totalBookmarks: Int,
         val isBookmarked: Boolean,
@@ -40,4 +42,11 @@ data class PixivRecommendIllusts(
     data class MetaSinglePage(
         @SerialName("original_image_url")val originalImageUrl: String? = null
     ): Parcelable
+    @Serializable
+    @Parcelize
+    data class Tag(
+        val name: String,
+        val translatedName: String?,
+
+    ) : Parcelable
 }

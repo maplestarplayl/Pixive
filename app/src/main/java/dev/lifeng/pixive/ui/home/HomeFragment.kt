@@ -52,6 +52,7 @@ class HomeFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d("HomeFragment", "savedInstance is $savedInstanceState")
         val navigationBar = requireActivity().findViewById<BottomNavigationView>(R.id.navigation_view)
+        navigationBar.visibility = View.VISIBLE
         val recommendArtistsLayout = binding!!.recmomendArtists.recommendArtistsLayout
         recommendArtistsLayout.setOnClickListener{
             findNavController().navigate(R.id.action_from_home_to_recommend_artists)

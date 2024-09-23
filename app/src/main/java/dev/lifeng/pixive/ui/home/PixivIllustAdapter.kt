@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -26,6 +27,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.lifeng.pixive.PixiveApplication
 import dev.lifeng.pixive.R
 import dev.lifeng.pixive.data.model.response.PixivRecommendIllusts
@@ -154,6 +156,7 @@ class PixivIllustAdapter(val context: Context) : PagingDataAdapter<PixivRecommen
                 .addSharedElement(imageView,imageView.transitionName).build()
             //val extras = FragmentNavigatorExtras(imageView to "shared_image2")
             it.findNavController().navigate(R.id.action_from_home_to_illust_detail,bundle,null,extras)
+            imageView.findFragment<HomeFragment>().requireActivity().findViewById<BottomNavigationView>(R.id.navigation_view).visibility = View.GONE
         }
     }
 

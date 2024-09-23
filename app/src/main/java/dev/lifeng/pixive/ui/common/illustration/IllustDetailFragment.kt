@@ -6,17 +6,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.transition.TransitionInflater
 import coil.load
-import dev.lifeng.pixive.R
+import coil.transform.CircleCropTransformation
 import dev.lifeng.pixive.data.model.response.PixivRecommendIllusts
+import dev.lifeng.pixive.databinding.FragmentIllustDetailBinding
 
 
 class IllustDetailFragment: Fragment() {
+    private var binding: FragmentIllustDetailBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -25,27 +26,27 @@ class IllustDetailFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         sharedElementEnterTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
         sharedElementReturnTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.move)
-        return inflater.inflate(R.layout.fragment_illust_detail, container, false)
+        binding = FragmentIllustDetailBinding.inflate(inflater, container, false)
+        val view = binding!!.root
+        return view
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         postponeEnterTransition()
-
-        val imageView = requireView().findViewById<ImageView>(R.id.illust_detail_image)
+        val imageView = binding!!.illustDetailImage
         val illust = arguments?.getParcelable("illust_detail", PixivRecommendIllusts.Illust::class.java)
         ViewCompat.setTransitionName(imageView,"shared_image${illust!!.id}")
-        imageView.load(illust?.imageUrls?.large){
+        imageView.load(illust.imageUrls.large){
             //stretch the image's height when it spans the whole screen width
             target(onSuccess = {result ->
                 imageView.setImageDrawable(result)
                 startPostponedEnterTransition()
                 Log.d("TEST","load success")
-
-            }, onError = {
+            },     onError = {
                 //startPostponedEnterTransition()
                 Log.d("TEST","load failed")
             })
@@ -56,7 +57,22 @@ class IllustDetailFragment: Fragment() {
             layoutParams.width = imageWidth
             layoutParams.height = imageHeight
             addHeader("Referer", "https://www.pixiv.net/")
-
         }
+        val titleText = binding!!.illustDetailTitle
+        val viewsText = binding!!.views
+        val starsText = binding!!.stars
+        val dateText  = binding!!.date
+        titleText.text = illust.title
+        viewsText.text = illust.totalView.toString()
+        starsText.text = illust.totalBookmarks.toString()
+        dateText.text = illust.createDate
+        val artistImage = binding!!.illustDetailArtistImage
+        val artistName  = binding!!.illustDetailArtistName
+        artistImage.load(illust.user.profileImageUrls.medium){
+            addHeader("Referer", "https://www.pixiv.net/")
+            crossfade(800)
+            transformations(CircleCropTransformation())
+        }
+        artistName.text = illust.user.name
     }
 }
