@@ -6,7 +6,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
 
@@ -23,8 +22,11 @@
         android:id="@+id/navigation_view"
         android:layout_width="match_parent"
         android:layout_height="70dp"
+        app:itemIconSize="25dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:fitsSystemWindows="true"
+        app:itemPaddingTop="5dp"
+        app:itemPaddingBottom="0dp"
+        app:itemTextAppearanceActive="@style/BottomNavigationActiveText"
         app:menu="@menu/bottom_nav_menu">
     </com.google.android.material.bottomnavigation.BottomNavigationView>
   </androidx.constraintlayout.widget.ConstraintLayout>
